@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Handler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,19 +21,19 @@ class ListController extends Controller
     public function select(Request $request, $type)
     {
         try {
-            $tableName = $this->tables[$type]; // try catch
+            $tableName = $this->tables[$type];
             $collection = collect(DB::table($this->tables[$type])->get(['*']));
 
-            $size = $request->input('pageSize');
-            $page = $request->input('page');
-            //$collection->chunk()
-//        $query->partition()
-            $chunks = $collection->chunk(10);
+            $size = $request->input('pageSize', '10');
+            $page = $request->input('page', 1);
 
-            return ['response' => [$size, $page]];
-            //return DB::table($this->tables[$type]);
+            $chunks = $collection->chunk($size);
+            $length = $chunks->count();
+            if($length < $page || $page < 1) return [];
+
+            return $chunks[$page - 1];
         }
-        catch (Handler) {
+        catch (\Exception $e) {
             return ['error' => 'invalid parameters'];
         }
     }

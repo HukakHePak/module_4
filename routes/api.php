@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use \Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::namespace('App\Http\Controllers')->group(function () {
-    Route::post('/login', 'AuthorizationConroller@auth');
-    Route::delete('/login', 'AuthorizationConroller@out')->middleware('auth:api');
-});
+Route::post('/login', 'App\Http\Controllers\AuthorizationConroller@auth');
 
-Route::middleware('auth:api')->namespace('App\Http\Controllers')->group(function () {
+
+Route::middleware(['auth:api'])->namespace('App\Http\Controllers')->group(function () {
+    Route::delete('/login', 'AuthorizationConroller@out');
+
     Route::get('/{type}', 'ListController@select');
     Route::get('/search/{category}?q={q}', 'ListController@search');
 
@@ -28,4 +27,11 @@ Route::middleware('auth:api')->namespace('App\Http\Controllers')->group(function
     Route::post('/verify-compatibility', 'MachinesController@verify');
 });
 
-Route::get('/images/{id}', 'ImagesController@select');
+Route::get('/images/{id}', App\Http\Controllers\ImagesController::class);
+
+Route::get('/unauthorized/error', function(Request $request) {
+    if($request->bearerToken()) {
+        return response()->json(['message' => 'Неверный токен'], 403 );
+    }
+    return response()->json(['message' => 'Необходима аутентификация'], 401);
+})->name('unauth');

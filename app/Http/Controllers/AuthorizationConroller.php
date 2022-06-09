@@ -29,11 +29,8 @@ class AuthorizationConroller extends Controller
 
     public function out(Request $request)
     {
-//        return dd('hello');
-        //dd($request);
         DB::table('user')->where('username', $request->user()->username)->update(['api_token' => '']);
 
-        return \response()->json(['message' => 'Успешный выход']); //redirect to success;
-        //dd(Auth::user()->setRememberToken(null) );
+        return \response()->json(['message' => 'Успешный выход']);
     }
 }

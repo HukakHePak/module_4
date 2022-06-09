@@ -16,10 +16,6 @@ class Unauthenticate
      */
     public function handle(Request $request, Closure $next)
     {
-//        dd($request);
-//
-//        return 'unauth';
-
         return $next($request);
     }
 }

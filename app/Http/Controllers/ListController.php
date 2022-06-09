@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use \Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,23 +19,51 @@ class ListController extends Controller
         'brands' => 'brand'
     ];
 
-    public function select(Request $request, $type)
+//    private function validate($parameters) {
+//        $validator = Validator::make($parameters, [
+//            'pageSize' => 'numeric',
+//            'page' => 'numeric',
+//            'category' => 'required|alpha_dash',
+//            'q' => 'alpha',
+//        ], []);
+//
+//        return $validator->validated();
+//    }
+
+    private function chunking(Request $request, $table) {
+        $collection = collect($table);
+        $size = $request->input('pageSize', '10');
+        $page = $request->input('page', 1);
+
+        $chunks = $collection->chunk($size);
+        $length = $chunks->count();
+        if($length < $page || $page < 1) return [];
+
+        return $chunks[$page - 1];
+    }
+
+    public function select(Request $request, $category)
     {
         try {
-            $tableName = $this->tables[$type];
-            $collection = collect(DB::table($this->tables[$type])->get(['*']));
+            $table = DB::table($this->tables[$category])->get(['*']);
 
-            $size = $request->input('pageSize', '10');
-            $page = $request->input('page', 1);
-
-            $chunks = $collection->chunk($size);
-            $length = $chunks->count();
-            if($length < $page || $page < 1) return [];
-
-            return $chunks[$page - 1];
+            return $this->chunking($request, $table);
         }
         catch (\Exception $e) {
-            return ['error' => 'invalid parameters'];
+            abort(404);
+        }
+    }
+
+    public function search(Request $request, $category) {
+        try {
+            $q = $request->input('q'); // validate
+
+            $table = DB::table($this->tables[$category])->where('name', 'like', '%' . $q . '%') ->get(['*']);
+
+            return $this->chunking($request, $table);
+        }
+        catch (\Exception $e) {
+            abort(404);
         }
     }
 }

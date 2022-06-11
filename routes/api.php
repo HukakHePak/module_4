@@ -20,8 +20,8 @@ Route::post('/login', 'App\Http\Controllers\AuthorizationConroller@auth');
 Route::middleware(['auth:api'])->namespace('App\Http\Controllers')->group(function () {
     Route::delete('/login', 'AuthorizationConroller@out');
 
-    Route::apiResource('/machines', 'MachinesController')->only(['post', 'put', 'delete']);
-    Route::post('/verify-compatibility', 'MachinesController@verify');
+    Route::apiResource('machines', MachinesController::class)->only(['store', 'update', 'destroy']);
+    Route::post('/verify-compatibility', 'MachinesController@check');
 
     Route::get('/{category}', 'ListController@select');
     Route::get('/search/{category}', 'ListController@search');

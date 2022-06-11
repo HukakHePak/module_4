@@ -18,14 +18,14 @@ class MachinesController extends Controller
 
     private function get($name, $ids) {
         try {
-            return DB::table($name)->where('id', $ids[$name . 'Id'])->first();
+            return DB::table($name)->find($ids[$name . 'Id']);
         }
         catch (\Exception $e) {
             return false;
         }
     }
 
-    public function verify(Request $request, $full = false)
+    private function verify(Request $request, $full = false)
     {
 //        $request->validate([
 //            // все поля являются числами
@@ -66,11 +66,11 @@ class MachinesController extends Controller
         }
 
         if($ram) {
-            if($ram->ramMemoryType !== $motherboard->ramMemoryType)
+            if($ram->ramMemoryTypeId !== $motherboard->ramMemoryTypeId)
                 $conflicts['ramMemoryId'] = 'Тип ОЗУ на материнской плате отличается от типа ОЗУ';
 
             if($ramAmount > $motherboard->ramMemorySlots)
-                $conflicts['ramMemoryAmount'] = 'Тип ОЗУ на материнской плате отличается от типа ОЗУ';
+                $conflicts['ramMemoryAmount'] = 'Количество ОЗУ превышает количество слотов на материнской плате';
         }
 
         if($card) {
@@ -80,7 +80,7 @@ class MachinesController extends Controller
             if($cardCount > 1 && !$card->supportMultiGpu)
                 $conflicts['graphicCardId'] = 'Модель видеокарты не поддерживает SLI / Crossfire';
 
-            if($power && $power->potency < $card->minimumPowerSupply * $cardCount)
+            if($power && ($power->potency < ($card->minimumPowerSupply * $cardCount)))
                 $conflicts['powerSupplyId'] = 'Мощность блока питания меньше минимального значения мощности видеокарты';
         }
 
@@ -116,6 +116,21 @@ class MachinesController extends Controller
         return $conflicts;
     }
 
+    public function check(Request $request)
+    {
+        try
+        {
+            $uncompatibilities = $this->verify($request);
+
+            return $uncompatibilities->isEmpty() ? response()->json(['message' => 'Действующая машина'])
+                : response()->json($uncompatibilities, 400);
+        }
+        catch (\Throwable $e)
+        {
+            return response()->json(['message' => 'Неверные параметры'], 400);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -143,10 +158,11 @@ class MachinesController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        DB::table($this->table)->delete($id);
+        return DB::table('machine')->delete($id) ?
+            response(null, 204) :
+            response()->json(['message' => 'Модель машины не найдена'], 404);
     }
 }

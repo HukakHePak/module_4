@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "username": "joaomartinscoube",
+    "password": "senai_701",
+    "accessToken": ""
+  },
+  {
+    "id": 2,
+    "username": "robertosimonsen",
+    "password": "senai_101",
+    "accessToken": ""
+  },
+  {
+    "id": 3,
+    "username": "franciscomatarazzo",
+    "password": "senai_107",
+    "accessToken": ""
+  }
+]

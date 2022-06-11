@@ -20,11 +20,11 @@ Route::post('/login', 'App\Http\Controllers\AuthorizationConroller@auth');
 Route::middleware(['auth:api'])->namespace('App\Http\Controllers')->group(function () {
     Route::delete('/login', 'AuthorizationConroller@out');
 
+    Route::apiResource('/machines', 'MachinesController')->only(['post', 'put', 'delete']);
+    Route::post('/verify-compatibility', 'MachinesController@verify');
+
     Route::get('/{category}', 'ListController@select');
     Route::get('/search/{category}', 'ListController@search');
-
-    Route::apiResource('machines', 'MachinesController');
-    Route::post('/verify-compatibility', 'MachinesController@verify');
 });
 
 Route::get('/images/{id}', App\Http\Controllers\ImagesController::class);

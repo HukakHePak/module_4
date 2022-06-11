@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MachinesController extends Controller
 {
@@ -40,7 +41,7 @@ class MachinesController extends Controller
         $power = $this->get('powerSupply', $ids);
         $ram = $this->get('ramMemory', $ids);
         $card = $this->get('graphicCard', $ids);
-        $storage = [];
+        $storage = collect();
 
         $ramAmount = $request->input('ramMemoryAmount');
         $cardCount = $request->input('graphicCardAmount');
@@ -110,7 +111,6 @@ class MachinesController extends Controller
             if(!$card || $cardCount < 1) $conflicts['graphicCardId'] = 'Отсутсвует видеокарта';
             if(!$processor) $conflicts['processorId'] = 'Отсутсвует процессор';
             if(!$ram) $conflicts['ramMemoryId'] = 'Отсутсвует оперативная память';
-            if($storage->count() < 1) $conflicts['storageDevices'] = 'Отсутствуют запоминающие устройства';
         }
 
         return $conflicts;
@@ -120,10 +120,10 @@ class MachinesController extends Controller
     {
         try
         {
-            $uncompatibilities = $this->verify($request);
+            $conflicts = $this->verify($request);
 
-            return $uncompatibilities->isEmpty() ? response()->json(['message' => 'Действующая машина'])
-                : response()->json($uncompatibilities, 400);
+            return $conflicts->isEmpty() ? response()->json(['message' => 'Действующая машина'])
+                : response()->json($conflicts, 400);
         }
         catch (\Throwable $e)
         {
@@ -137,9 +137,51 @@ class MachinesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+
+    private function save($code) {
+        $filename = uniqid() . '.png';
+
+        Storage::put('/public/images/' . $filename, base64_decode($code));
+
+        return $filename;
+    }
+
+    public function store(Request $request, $updId = null)
     {
-        //
+        $image = $request->input('imageBase64');
+
+        if(!$image) {
+            return response()->json(['message' => 'Изображение не предоставлено'], 400);
+        }
+
+        try {
+            $filename = $this->save($image);
+
+            $conflicts = $this->verify($request, true);
+
+            if($conflicts->count()) {
+               return response()->json($conflicts, 400);
+            }
+
+            $machine = $request->all();
+
+            unset($machine['imageBase64']);
+
+            $machine['imageUrl'] = $filename;
+
+            if($updId) {
+                DB::table('machine')->where('id', $updId)->update($machine);
+
+                return response()->json(DB::table('machine')->find($updId));
+            }
+            $id = DB::table('machine')->insertGetId($machine);
+
+            return response()->json(DB::table('machine')->find($id));
+        } catch (\Throwable $e) {
+            return $e;
+        }
+
+
     }
 
     /**
@@ -151,7 +193,7 @@ class MachinesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        return $this->store($request, $id);
     }
 
     /**

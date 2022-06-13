@@ -1,91 +1,110 @@
 import React, {useState} from 'react';
-import TypesView from "../TypesView/TypesView";
 import MachineDetail from "./MachineDetail";
 import InfoCard from "../TypesView/InfoCard";
-import HorizontalMenu from "../TypesView/HorizontalMenu";
 import MachinesView from "../TypesView/MachinesView";
 import Button from "../Button";
 import {request} from "../../api/request";
+import {plural} from "../../helpers/helpers";
+
+const toolTipOffset = 20;
 
 function MachineConstructor(props) {
-    const {token} = props;
-    const [selected, setSelected] = useState(null);
+    const {token, types} = props;
+    const [selected, setSelected] = useState();
     const [position, setPosition] = useState();
     const [machine, setMachine] = useState({});
+    const [devices, setDevices] = useState([]);
     const [warn, setWarn] = useState(false);
 
     function formalize(data) {
-        const {motherboard, processor, ram, power, graphic, devices} = data;
+        const {motherboard, processor, ram, power, graphic} = data;
         return {
-            motherboardId: motherboard.id,
-            processorId: processor.id,
-            ramMemoryId: ram.id,
-            ramMemoryAmount: ram.amount,
-            powerSupplyId: power.id,
-            graphicCardId: graphic.id,
-            graphicCardAmount: graphic.amount,
+            motherboardId: motherboard?.id,
+            processorId: processor?.id,
+            ramMemoryId: ram?.id,
+            ramMemoryAmount: ram?.amount,
+            powerSupplyId: power?.id,
+            graphicCardId: graphic?.id,
+            graphicCardAmount: graphic?.amount,
             storageDevices: devices?.map(item => {
-                    return {
-                        storageDeviceId: item.id,
-                        storageDeviceAmount: item.amount
-                    }
+                return {
+                    storageDeviceId: item?.id, storageDeviceAmount: item?.amount
                 }
-            ),
+            }),
         }
     }
 
     function selectHandler(item) {
         setSelected(item);
+        console.log(item)
     }
 
     function dropHandler(type) {
-        if (selected.type == type) {
-            //machine[type] = selected;
-            request('verify-compability', token, 'post', formalize(machine)).then(setMachine({
-                ...machine,
-                [type]: selected
+        console.log(selected, type)
+
+        if (selected.type == plural(type)) {
+            request('verify-compatibility', token, 'post', formalize(machine)).then(setMachine({
+                ...machine, [type]: selected
             }))
 
 
-            setPosition();
+            setSelected();
         }
     }
 
     function moveHandler(e) {
-        setPosition({top: e.clientTop, left: e.clientLeft});
+        //console.log(selected, e)
+
+        if(selected) setPosition({top: e.clientY + toolTipOffset, left: e.clientX + toolTipOffset});
     }
 
     function createHandler() {
-        request('machine', token, 'post',)
+        request('machines', token, 'post', formalize(machine));
     }
 
-    return (
-        <div className='machine-constructor' onMouseMove={moveHandler}>
-            <div className='machine-header'>
-                <span>Create new machine</span>
-                <Button onClick={createHandler}>Create</Button>
+    function cancelHandler() {
+        setSelected();
+        setPosition();
+    }
+
+    function dropDeviceHandler() {
+
+    }
+
+    return (<div className='machine-constructor' onMouseMove={moveHandler} onMouseUp={cancelHandler}>
+        <div className='machine-header'>
+            <span>Create new machine</span>
+            <Button onClick={createHandler}>Create</Button>
+        </div>
+        <div className='machine-container'>
+            <div className='machine-details'>
+                <MachinesView types={types} toolTip token={token} onDrag={selectHandler}/>
             </div>
-            <div className='machine-container'>
-                <div className='machine-details'>
-                    <MachinesView token={token} onDrag={selectHandler}/>
-                </div>
-                <div className='machine-board'>
-                    <MachineDetail data={machine.motherboard} onMouseUp={dropHandler}/>
-                    <MachineDetail data={machine.processor} onMouseUp={dropHandler}/>
-                    <MachineDetail counted data={machine.ram} onMouseUp={dropHandler}/>
-                    <MachineDetail data={machine.power} onMouseUp={dropHandler}/>
-                    <MachineDetail data={machine.graphic} onMouseUp={dropHandler}/>
+            <div className='machine-board'>
+                {[['motherboard'], ['graphic-card', true], ['power-supply'], ['processor'], ['ram-memory', true]]
+                    .map(([type, counted]) => <MachineDetail key={type}
+                                                             type={type}
+                                                             data={machine[type]}
+                                                             counted={counted}
+                                                             onMouseUp={() => dropHandler(type)}
+                                                             onRemove={() => removeHandler(type)}
+                                                             onChange={(e) => changeHandler(type, e)}
+                    />)}
+                <div onMouseUp={() => dropDeviceHandler}>
+                    <span className='storage-devices__header'>StorageDevices</span>
                     <div className='storage-devices'>
-                        machine.devices?.map(item=><MachineDetail inline counted data={item}/>)
+                        {machine['storage-devices']?.map((data) => <MachineDetail type='storage-devices' inline
+                                                                       data={data}
+                                                                       key={data.id}
+                                                                       onRemove={() => setDevices()}
+                                                                       onChange={(e) => changeHandler('storage-devices', e)}/>)}
                     </div>
                 </div>
-                {selected && position &&
-                    <InfoCard style={{position: 'fixed', top: position?.top, left: position?.left}}
-                              img={selected.img}
-                              name={selected.name}/>}
             </div>
+            {selected && position && <InfoCard style={{position: 'fixed', top: position?.top, left: position?.left}}
+                                               data={selected}/>}
         </div>
-    );
+    </div>);
 }
 
 export default MachineConstructor;

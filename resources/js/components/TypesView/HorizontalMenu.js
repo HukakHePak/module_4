@@ -1,25 +1,25 @@
 import React from 'react';
+import {formalize} from "../../helpers/helpers";
 
 function HorizontalMenu(props) {
     const {data, selected, onSelect, asList} = props;
 
-    function formalize(name) {
-        return name[0].toUpperCase() + name.slice(1).replace('-', ' ');
-    }
-
     return (
         asList ?
-            <select className='type-menu'>
+            <select className='type-menu' onChange={(e) => onSelect(e.target.value)}>
                 {data.map((name, index) =>
-                    <option key={index} selected={name === selected} className={'type-menu__item'}
-                            onClick={() => onSelect(name)}>
+                    <option className='type-menu__item'
+                            value={name}
+                            key={index}
+                            selected={name === selected}
+                    >
                         {formalize(name)}
                     </option>)}
             </select> :
             <ul className='horizontal-menu'>
                 {data.map((name, index) =>
                     <li key={index} className={'horizontal-menu__item ' + (name === selected && ' active')}
-                            onClick={() => onSelect(name)}>
+                        onClick={() => onSelect(name)}>
                         {formalize(name)}
                     </li>)}
             </ul>

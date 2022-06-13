@@ -5,12 +5,14 @@ import LoginForm from "./LoginForm";
 import WarningModal from "./WarningModal";
 import {request} from "../api/request";
 import MachinesView from "./TypesView/MachinesView";
+import MachineConstructor from "./MachineConstructor/MachineConstructor";
+import {types} from "../api/data";
 
 
 function App() {
     const [token, setToken] = useState('test-token');
     const [warn, setWarn] = useState(false);
-    const [view, setView] = useState('machines');
+    const [view, setView] = useState('create');
 
     useEffect(() => {
         window.addEventListener('beforeunload', logoutHandler);
@@ -41,7 +43,9 @@ function App() {
             </header>
             <main>
                 {token ?
-                    (view === 'machines' && <MachinesView onCreate={() => setView('create')} token={token} full/>)
+                    (view === 'machines' &&
+                        <MachinesView types={types} onCreate={() => setView('create')} token={token} full/>
+                        || view === 'create' && <MachineConstructor types={types.slice(1)} token={token}/>)
                     : <LoginForm onSubmit={loginHandler}/>
                 }
                 {warn && <WarningModal onClick={() => setWarn(false)}>Invalid login or password</WarningModal>}

@@ -28,10 +28,6 @@ class MachinesController extends Controller
 
     private function verify(Request $request, $full = false)
     {
-//        $request->validate([
-//            // все поля являются числами
-//        ]);
-
         $ids = $request->all();
 
         $conflicts = collect();
@@ -139,9 +135,9 @@ class MachinesController extends Controller
      */
 
     private function save($code) {
-        $filename = uniqid() . '.png';
+        $filename = uniqid();
 
-        Storage::put('/public/images/' . $filename, base64_decode($code));
+        Storage::put('/public/images/' . $filename . '.png', base64_decode($code));
 
         return $filename;
     }

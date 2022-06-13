@@ -21,7 +21,7 @@ class AuthorizationConroller extends Controller
             }
 
             if($user->api_token !== '') {
-                return \response()->json(['message' => 'Пользователь уже аутентифицирован']);
+                return \response()->json(['message' => 'Пользователь уже аутентифицирован'], 403);
             }
 
             $token = 'test-token';//Str::random(60);

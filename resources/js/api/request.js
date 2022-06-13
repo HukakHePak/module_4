@@ -1,3 +1,5 @@
+export const url = 'http://localhost/api/';
+
 export async function request(path, token = '', method = 'get', body) {
     const options = {
         method: method.toUpperCase(),
@@ -10,7 +12,8 @@ export async function request(path, token = '', method = 'get', body) {
     if (token) options.headers = {...options.headers, 'Authorization': `Bearer ${token}`};
 
     try {
-        return fetch(`http://localhost/api/${path}`, options).then(r => {
+        return fetch(url + path, options).then(r => {
+            console.log(r);
             if (r.ok) return r.json();
             throw r.json();
         });

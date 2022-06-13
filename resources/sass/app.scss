@@ -1,3 +1,6 @@
+html {
+}
+
 body {
     height: 100vh;
     margin: 0;
@@ -6,18 +9,22 @@ body {
 * {
     font-family: 'Verdana', sans-serif;
     font-size: 18px;
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 #app {
     height: 100%;
-    display: flex;
     flex-direction: column;
-
 }
 
 main {
     height: 100%;
     display: flex;
+    flex-direction: column;
 }
 
 div {
@@ -30,6 +37,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 20px 30px;
+    height: 82px;
     border-bottom: 1px solid black;
 }
 
@@ -80,4 +88,55 @@ header {
         flex-direction: column;
         gap: 30px;
     }
+}
+
+.info-card {
+    border: 1px solid black;
+    margin: 0;
+    padding: 10px;
+
+    img {
+        width: 100%;
+        object-fit: cover;
+    }
+}
+
+.machines-view {
+    flex-direction: column;
+    width: 100%;
+
+    .machines-list {
+        display: flex;
+        padding: 10px;
+        height: calc(100vh - 130px);
+        overflow: scroll;
+    }
+
+    .machines-grid {
+        margin: 0 auto;
+        max-width: 1000px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, 1fr);
+        height: fit-content;
+    }
+
+}
+
+
+
+.horizontal-menu {
+    margin: 0;
+    display: flex;
+    justify-content: space-evenly;
+    list-style-type: none;
+    padding: 0;
+}
+
+.horizontal-menu__item {
+    padding: 10px;
+}
+
+.horizontal-menu__item.active {
+    background: rgba(0,0,0,0.24);
 }

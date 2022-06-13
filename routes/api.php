@@ -18,7 +18,7 @@ Route::post('/login', 'App\Http\Controllers\AuthorizationConroller@auth');
 
 
 Route::middleware(['auth:api'])->namespace('App\Http\Controllers')->group(function () {
-    Route::delete('/login', 'AuthorizationConroller@out');
+    Route::delete('/logout', 'AuthorizationConroller@out');
 
     Route::apiResource('machines', MachinesController::class)->only(['store', 'update', 'destroy']);
     Route::post('/verify-compatibility', 'MachinesController@check');

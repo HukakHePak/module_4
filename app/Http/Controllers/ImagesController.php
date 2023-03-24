@@ -10,7 +10,7 @@ class ImagesController extends Controller
 {
     public function __invoke($id) {
         try{
-            return \response()->file("storage/images/$id.png");
+            return \response()->file("app/storage/public/images/$id.png");
         }
         catch(\Exception $e) {
             return \response()->json(['message' => 'Изображение не найдено'], 404);

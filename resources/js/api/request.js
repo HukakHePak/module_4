@@ -1,4 +1,4 @@
-export const url = 'http://localhost/api/';
+import { url } from "./data";
 
 export async function request(path, token = '', method = 'get', body) {
     const options = {
